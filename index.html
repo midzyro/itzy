@@ -262,15 +262,27 @@
         }
       });
 
-      // ms1選項到期自動關閉
+      // 選項到期自動關閉
       const today = new Date();
-      const deadline = new Date('2025-06-04');
-      if (today > deadline) {
-        [...purchaseChannelSelect.options].forEach(option => {
-          if (option.value.toLowerCase().includes('ms1')) {
+      const deadlines = {
+        'MS1': '2025-06-04',
+        'ms1': '2025-06-04',
+        'WM1': '2025-06-10',
+        'wm1': '2025-06-08',
+      };
+      
+      [...purchaseChannelSelect.options].forEach(option => {
+        const deadlineStr = deadlines[option.value];
+        if (deadlineStr) {
+          const deadlineDate = new Date(deadlineStr);
+          if (today > deadlineDate) {
             option.disabled = true;
-            option.textContent += '（已截止）';
+            if (!option.textContent.includes('（已截止）')) {
+              option.textContent += '（已截止）';
+            }
           }
+        }
+      });
         });
       }
 
