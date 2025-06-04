@@ -66,7 +66,6 @@
       background-color: #218838;
     }
 
-    /* 這是切換用的小按鈕 */
     .toggle-btn {
       background-color: #007BFF;
       padding: 6px 10px;
@@ -103,7 +102,7 @@
       border: 2px solid #ddd;
       border-radius: 6px;
       transition: transform 0.2s;
-      cursor: zoom-in;
+      cursor: pointer;
     }
 
     img.product-photo:hover {
@@ -140,7 +139,6 @@
       background-color: #f1f1f1;
     }
 
-    /* 切換隱藏樣式 */
     .visible {
       display: flex !important;
     }
@@ -149,28 +147,25 @@
       display: none !important;
     }
 
-    /* Lightbox 覆蓋層 */
-    #lightbox {
+    /* 🆕 放大圖片視窗樣式 */
+    #lightboxOverlay {
       position: fixed;
       top: 0; left: 0;
-      width: 100vw; height: 100vh;
-      background: rgba(0,0,0,0.8);
+      width: 100vw;
+      height: 100vh;
+      background-color: rgba(0, 0, 0, 0.8);
       display: none;
-      justify-content: center;
       align-items: center;
-      cursor: zoom-out;
-      z-index: 1000;
+      justify-content: center;
+      z-index: 9999;
     }
 
-    #lightbox.visible {
-      display: flex;
-    }
-
-    #lightbox img {
+    #lightboxImage {
       max-width: 90%;
       max-height: 90%;
+      border: 5px solid #fff;
       border-radius: 8px;
-      box-shadow: 0 0 20px rgba(255,255,255,0.3);
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
     }
   </style>
 </head>
@@ -183,7 +178,6 @@
   <h2>填入資料</h2>
   <form id="auctionForm">
     <label>FB姓名: <input type="text" name="fb_name" required /></label><br>
-
     <label>購買通路:
       <select name="purchase_channel" id="purchase_channel" required>
         <option value="">--請選擇--</option>
@@ -193,7 +187,6 @@
         <option value="wm1">wm線下</option>
       </select>
     </label><br>
-
     <label>拚幾位成員:
       <select name="members_count" required>
         <option value="">--請選擇--</option>
@@ -204,11 +197,9 @@
         <option value="5">5位</option>
       </select>
     </label><br>
-
     <label>拚誰: <input type="text" name="partners" /></label><br>
     <label>匯款金額: <input type="number" name="bundle_price" required /></label><br>
     <label>備註: <input type="text" name="remarks" /></label><br>
-
     <button type="submit">送出</button>
   </form>
 
@@ -240,9 +231,9 @@
     </table>
   </div>
 
-  <!-- 放大圖片的遮罩層 -->
-  <div id="lightbox">
-    <img id="lightboxImg" src="" alt="放大圖片" />
+  <!-- 🆕 放大圖片視窗 -->
+  <div id="lightboxOverlay">
+    <img id="lightboxImage" src="" alt="放大圖片">
   </div>
 
   <script>
@@ -253,10 +244,25 @@
       const form = document.getElementById('auctionForm');
       const statusMsg = document.getElementById('statusMsg');
       const purchaseChannelSelect = document.getElementById('purchase_channel');
-      const lightbox = document.getElementById('lightbox');
-      const lightboxImg = document.getElementById('lightboxImg');
 
-      // 限制 ms1 選項到 6/4
+      const lightbox = document.getElementById('lightboxOverlay');
+      const lightboxImage = document.getElementById('lightboxImage');
+
+      // 圖片點擊放大
+      document.querySelectorAll('.product-photo').forEach(img => {
+        img.addEventListener('click', () => {
+          lightboxImage.src = img.src;
+          lightbox.style.display = 'flex';
+        });
+      });
+
+      lightbox.addEventListener('click', (e) => {
+        if (e.target === lightbox || e.target === lightboxImage) {
+          lightbox.style.display = 'none';
+        }
+      });
+
+      // ms1選項到期自動關閉
       const today = new Date();
       const deadline = new Date('2025-06-04');
       if (today > deadline) {
@@ -298,36 +304,11 @@
         }
       });
 
-      // 單一按鈕切換特典圖片區和對帳表，互斥顯示
       toggleBtn.addEventListener('click', () => {
-        if (photoGallery.classList.contains('visible')) {
-          photoGallery.classList.remove('visible');
-          photoGallery.classList.add('hidden');
-
-          recordsWrapper.classList.remove('hidden');
-          recordsWrapper.classList.add('visible');
-        } else {
-          recordsWrapper.classList.remove('visible');
-          recordsWrapper.classList.add('hidden');
-
-          photoGallery.classList.remove('hidden');
-          photoGallery.classList.add('visible');
-        }
-      });
-
-      // 點擊圖片放大顯示
-      const productPhotos = document.querySelectorAll('img.product-photo');
-      productPhotos.forEach(img => {
-        img.addEventListener('click', () => {
-          lightboxImg.src = img.src;
-          lightbox.classList.add('visible');
-        });
-      });
-
-      // 點擊遮罩層任意處關閉放大圖
-      lightbox.addEventListener('click', () => {
-        lightbox.classList.remove('visible');
-        lightboxImg.src = '';
+        photoGallery.classList.toggle('visible');
+        photoGallery.classList.toggle('hidden');
+        recordsWrapper.classList.toggle('visible');
+        recordsWrapper.classList.toggle('hidden');
       });
     });
   </script>
