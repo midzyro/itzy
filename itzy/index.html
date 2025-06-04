@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <title>拼車系統</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <h1>拼車</h1>
+  <h2>匯款資訊</h2>
+  A:中信<br>
+  B:郵局
+
+  <h2>填入資料</h2>
+  <form id="auctionForm">
+    <label>FB姓名: <input type="text" name="fb_name" required /></label><br>
+
+    <label>購買通路:
+      <select name="purchase_channel" id="purchase_channel" required>
+        <option value="">--請選擇--</option>
+        <option value="MS1">ms1(線上)感冒</option>
+        <option value="ms1">ms1(線下)表符</option>
+        <option value="WM1">wm線上</option>
+        <option value="wm1">wm線下</option>
+      </select>
+    </label><br>
+
+    <label>拚幾位成員:
+      <select name="members_count" required>
+        <option value="">--請選擇--</option>
+        <option value="1">1位</option>
+        <option value="2">2位</option>
+        <option value="3">3位</option>
+        <option value="4">4位</option>
+        <option value="5">5位</option>
+      </select>
+    </label><br>
+
+    <label>拚誰: <input type="text" name="partners" /></label><br>
+    <label>匯款金額: <input type="number" name="bundle_price" required /></label><br>
+    <label>備註: <input type="text" name="remarks" /></label><br>
+
+    <button type="submit">送出</button>
+  </form>
+
+  <p id="statusMsg"></p>
+
+  <button id="toggleSectionBtn">切換特典 / 對帳表</button>
+
+  <h2>特典圖片區</h2>
+  <div id="photoGallery" class="visible">
+    <img src="https://via.placeholder.com/100" alt="商品照片" class="product-photo" />
+    <img src="https://via.placeholder.com/100" alt="商品照片" class="product-photo" />
+  </div>
+
+  <h2>對帳表</h2>
+  <div id="recordsWrapper" class="hidden">
+    <table id="recordsTable">
+      <thead>
+        <tr>
+          <th>拼車群</th>
+          <th>車主</th>
+          <th>進度</th>
+          <th>備註</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- JS 自動生成 -->
+      </tbody>
+    </table>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
