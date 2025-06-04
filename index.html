@@ -147,7 +147,7 @@
       display: none !important;
     }
 
-    /* 🆕 放大圖片視窗樣式 */
+    /* 放大圖片視窗樣式 */
     #lightboxOverlay {
       position: fixed;
       top: 0; left: 0;
@@ -175,16 +175,19 @@
   A:中信<br>
   B:郵局
 
+  <!-- 送出之後會連動到 google表單 -->
+
   <h2>填入資料</h2>
   <form id="auctionForm">
     <label>姓名:
       <select name="fb_name" id="fb_name" required>
         <option value="">--請選擇--</option>
-        <option value="ya ting">yating</option>
+        <option value="yating">yating</option>
         <option value="ming">ming</option>
       </select>
     </label><br>
-    <label>購買通路:
+
+    <label>通路:
       <select name="purchase_channel" id="purchase_channel" required>
         <option value="">--請選擇--</option>
         <option value="MS1">ms1(線上)感冒</option>
@@ -193,20 +196,28 @@
         <option value="wm1">wm線下</option>
         <option value="other">其他</option>
       </select>
+      <!-- 輸入框預設隱藏 -->
+      <input type="text" name="purchase_channel_other" id="purchase_channel_other" placeholder="請輸入其他通路名稱" style="margin-top:5px; display:none;"/>
     </label><br>
-    <label>拚幾位成員:
-      <select name="members_count" required>
-        <option value="">--請選擇--</option>
-        <option value="1">1位</option>
-        <option value="2">2位</option>
-        <option value="3">3位</option>
-        <option value="4">4位</option>
-        <option value="5">5位</option>
-      </select>
+
+    <label>拚誰:
+      <br>
+      <label><input type="checkbox" name="members" value="志" /> 志</label>
+      <label><input type="checkbox" name="members" value="粒" /> 粒</label>
+      <label><input type="checkbox" name="members" value="溜" /> 溜</label>
+      <label><input type="checkbox" name="members" value="領" /> 領</label>
+      <label><input type="checkbox" name="members" value="娜" /> 娜</label>
     </label><br>
-    <label>拚誰: <input type="text" name="partners" /></label><br>
+
+    <label>一車?：
+      <label><input type="radio" name="one_car" value="是" required /> 是</label>
+      <label><input type="radio" name="one_car" value="否" /> 否</label>
+    </label><br>
+
+    <label>誰付: <input type="text" name="partners" /></label><br>
     <label>匯款金額: <input type="number" name="bundle_price" required /></label><br>
     <label>備註: <input type="text" name="remarks" /></label><br>
+
     <button type="submit">送出</button>
   </form>
 
@@ -221,14 +232,27 @@
     <img src="wm.jpg" alt="特典圖片" class="product-photo" />
   </div>
 
+  <!-- 對帳表 -->
   <h2>對帳表</h2>
+
+  <label>要看誰: 
+    <select id="filterFbName">
+      <option value="">全部</option>
+      <option value="yating">yating</option>
+      <option value="ming">ming</option>
+    </select>
+  </label>
+
   <div id="recordsWrapper" class="hidden">
     <table id="recordsTable">
       <thead>
         <tr>
-          <th>拼車群</th>
-          <th>車主</th>
-          <th>進度</th>
+          <th>姓名</th>
+          <th>通路</th>
+          <th>拚誰</th>
+          <th>一車</th>
+          <th>誰付</th>
+          <th>匯款金額</th>
           <th>備註</th>
         </tr>
       </thead>
@@ -238,7 +262,7 @@
     </table>
   </div>
 
-  <!-- 🆕 放大圖片視窗 -->
+  <!-- 放大圖片視窗 -->
   <div id="lightboxOverlay">
     <img id="lightboxImage" src="" alt="放大圖片">
   </div>
@@ -251,6 +275,9 @@
       const form = document.getElementById('auctionForm');
       const statusMsg = document.getElementById('statusMsg');
       const purchaseChannelSelect = document.getElementById('purchase_channel');
+      const purchaseChannelOtherInput = document.getElementById('purchase_channel_other');
+      const filterFbName = document.getElementById('filterFbName');
+      const recordsTableBody = document.querySelector('#recordsTable tbody');
 
       const lightbox = document.getElementById('lightboxOverlay');
       const lightboxImage = document.getElementById('lightboxImage');
@@ -269,23 +296,76 @@
         }
       });
 
-      // ms1選項到期自動關閉
       const today = new Date();
-      const deadline = new Date('2025-06-04');
-      if (today > deadline) {
-        [...purchaseChannelSelect.options].forEach(option => {
-          if (option.value.toLowerCase().includes('ms1')) {
+      const channelDeadlines = {
+        ms1: '2025-06-04',
+        MS1: '2025-06-04',
+        wm1: '2025-06-10',
+        WM1: '2025-06-10',
+        other: '2025-07-01'
+      };
+
+      [...purchaseChannelSelect.options].forEach(option => {
+        const deadlineStr = channelDeadlines[option.value];
+        if (deadlineStr) {
+          const deadline = new Date(deadlineStr);
+          if (today > deadline) {
             option.disabled = true;
-            option.textContent += '（已截止）';
+            if (!option.textContent.includes('（已截止）')) {
+              option.textContent += '（已截止）';
+            }
           }
-        });
-      }
+        }
+      });
+
+      // 通路選擇切換其他輸入框
+      purchaseChannelSelect.addEventListener('change', () => {
+        if (purchaseChannelSelect.value === 'other') {
+          purchaseChannelOtherInput.style.display = 'block';
+          purchaseChannelOtherInput.required = true;
+        } else {
+          purchaseChannelOtherInput.style.display = 'none';
+          purchaseChannelOtherInput.required = false;
+          purchaseChannelOtherInput.value = '';
+        }
+      });
+
+      // 紀錄資料用陣列（模擬資料來源，或可改成fetch從Google Sheet抓取）
+      const records = [];
 
       // 表單送出
       form.addEventListener('submit', async (e) => {
         e.preventDefault();
         const formData = new FormData(form);
-        const data = Object.fromEntries(formData.entries());
+
+        // 處理多選 checkbox members
+        const members = [];
+        form.querySelectorAll('input[name="members"]:checked').forEach(cb => {
+          members.push(cb.value);
+        });
+
+        // 取得通路名稱（如果選other，取輸入框值）
+        let purchaseChannelVal = purchaseChannelSelect.value;
+        if (purchaseChannelVal === 'other') {
+          purchaseChannelVal = purchaseChannelOtherInput.value.trim();
+        }
+
+        // 封裝資料
+        const data = {
+          fb_name: formData.get('fb_name'),
+          purchase_channel: purchaseChannelVal,
+          members: members.join(', '),
+          one_car: formData.get('one_car'),
+          partners: formData.get('partners'),
+          bundle_price: formData.get('bundle_price'),
+          remarks: formData.get('remarks'),
+        };
+
+        // 模擬存資料（實際你還是會送Google表單）
+        records.push(data);
+
+        // 更新對帳表顯示
+        renderRecordsTable();
 
         try {
           const res = await fetch(
@@ -302,21 +382,62 @@
           if (result.result === 'success') {
             statusMsg.textContent = '✅ 成功送出！';
             form.reset();
+            purchaseChannelOtherInput.style.display = 'none'; // 重設輸入框隱藏
+            purchaseChannelOtherInput.required = false;
           } else {
             statusMsg.textContent = '❌ 發生錯誤，請稍後再試';
           }
         } catch (err) {
           console.error(err);
-          statusMsg.textContent = '❌ 發送失敗，請檢查網路或聯絡管理員';
+          statusMsg.textContent = '❌ 無法送出，請檢查網路連線';
         }
       });
 
+      // 切換特典 / 對帳表
       toggleBtn.addEventListener('click', () => {
-        photoGallery.classList.toggle('visible');
-        photoGallery.classList.toggle('hidden');
-        recordsWrapper.classList.toggle('visible');
-        recordsWrapper.classList.toggle('hidden');
+        if (photoGallery.classList.contains('visible')) {
+          photoGallery.classList.replace('visible', 'hidden');
+          recordsWrapper.classList.replace('hidden', 'visible');
+          toggleBtn.textContent = '切換特典圖片區';
+        } else {
+          recordsWrapper.classList.replace('visible', 'hidden');
+          photoGallery.classList.replace('hidden', 'visible');
+          toggleBtn.textContent = '切換對帳表';
+        }
       });
+
+      // 篩選拼車群資料
+      filterFbName.addEventListener('change', () => {
+        renderRecordsTable();
+      });
+
+      // 渲染對帳表
+      function renderRecordsTable() {
+        const filterVal = filterFbName.value;
+        recordsTableBody.innerHTML = '';
+        const filtered = filterVal
+          ? records.filter(r => r.fb_name === filterVal)
+          : records;
+
+        if (filtered.length === 0) {
+          recordsTableBody.innerHTML = '<tr><td colspan="7">無資料</td></tr>';
+          return;
+        }
+
+        for (const rec of filtered) {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${rec.fb_name}</td>
+            <td>${rec.purchase_channel}</td>
+            <td>${rec.members}</td>
+            <td>${rec.one_car}</td>
+            <td>${rec.partners}</td>
+            <td>${rec.bundle_price}</td>
+            <td>${rec.remarks}</td>
+          `;
+          recordsTableBody.appendChild(tr);
+        }
+      }
     });
   </script>
 </body>
