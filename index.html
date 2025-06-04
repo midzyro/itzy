@@ -103,6 +103,7 @@
       border: 2px solid #ddd;
       border-radius: 6px;
       transition: transform 0.2s;
+      cursor: zoom-in;
     }
 
     img.product-photo:hover {
@@ -146,6 +147,30 @@
 
     .hidden {
       display: none !important;
+    }
+
+    /* Lightbox 覆蓋層 */
+    #lightbox {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      background: rgba(0,0,0,0.8);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      cursor: zoom-out;
+      z-index: 1000;
+    }
+
+    #lightbox.visible {
+      display: flex;
+    }
+
+    #lightbox img {
+      max-width: 90%;
+      max-height: 90%;
+      border-radius: 8px;
+      box-shadow: 0 0 20px rgba(255,255,255,0.3);
     }
   </style>
 </head>
@@ -215,6 +240,11 @@
     </table>
   </div>
 
+  <!-- 放大圖片的遮罩層 -->
+  <div id="lightbox">
+    <img id="lightboxImg" src="" alt="放大圖片" />
+  </div>
+
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       const toggleBtn = document.getElementById('toggleSectionBtn');
@@ -223,6 +253,8 @@
       const form = document.getElementById('auctionForm');
       const statusMsg = document.getElementById('statusMsg');
       const purchaseChannelSelect = document.getElementById('purchase_channel');
+      const lightbox = document.getElementById('lightbox');
+      const lightboxImg = document.getElementById('lightboxImg');
 
       // 限制 ms1 選項到 6/4
       const today = new Date();
@@ -281,6 +313,21 @@
           photoGallery.classList.remove('hidden');
           photoGallery.classList.add('visible');
         }
+      });
+
+      // 點擊圖片放大顯示
+      const productPhotos = document.querySelectorAll('img.product-photo');
+      productPhotos.forEach(img => {
+        img.addEventListener('click', () => {
+          lightboxImg.src = img.src;
+          lightbox.classList.add('visible');
+        });
+      });
+
+      // 點擊遮罩層任意處關閉放大圖
+      lightbox.addEventListener('click', () => {
+        lightbox.classList.remove('visible');
+        lightboxImg.src = '';
       });
     });
   </script>
