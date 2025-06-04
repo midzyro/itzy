@@ -177,7 +177,13 @@
 
   <h2>填入資料</h2>
   <form id="auctionForm">
-    <label>FB姓名: <input type="text" name="fb_name" required /></label><br>
+    <label>姓名:
+      <select name="fb_name" id="fb_name" required>
+        <option value="">--請選擇--</option>
+        <option value="yating">ya ting</option>
+        <option value="ming">ming</option>
+      </select>
+    </label><br>
     <label>購買通路:
       <select name="purchase_channel" id="purchase_channel" required>
         <option value="">--請選擇--</option>
