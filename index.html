@@ -49,6 +49,11 @@
       border: 1px solid #ccc;
       border-radius: 4px;
       font-size: 16px;
+      box-sizing: border-box;
+    }
+
+    input[type="file"] {
+      margin-top: 5px;
     }
 
     button {
@@ -200,6 +205,10 @@
       <label><input type="radio" name="one_car" value="否" /> 否</label>
     </label>
 
+    <label>跟誰的車:
+      <input type="text" name="partners" placeholder="輸入代號，如 ming" />
+    </label>
+
     <label>誰付: 
       <select name="fb_name" class="custom-select" required>
         <option value="">--請選擇--</option>
@@ -208,9 +217,17 @@
       </select>
     </label>
 
-    <label>匯款金額: <input type="number" name="bundle_price" required /></label>
-    <label>憑證:<br><input type="file" name="voucher" accept="image/*" /></label>
-    <label>備註: <input type="text" name="remarks" /></label>
+    <label>匯款金額:
+      <input type="number" name="bundle_price" required />
+    </label>
+
+    <label>憑證:<br>
+      <input type="file" name="voucher" accept="image/*" />
+    </label>
+
+    <label>備註:
+      <input type="text" name="remarks" />
+    </label>
 
     <label>填寫時間:
       <input type="datetime-local" name="submit_time" required />
@@ -247,6 +264,7 @@
           <th>姓名</th>
           <th>通路</th>
           <th>拚誰</th>
+          <th>跟誰的車</th>
           <th>一車</th>
           <th>誰付</th>
           <th>匯款金額</th>
@@ -261,7 +279,7 @@
   <div id="lightboxOverlay">
     <img id="lightboxImage" src="" alt="放大圖片">
   </div>
-
+  
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
       const form = document.getElementById('auctionForm');
