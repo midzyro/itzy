@@ -200,7 +200,12 @@
       <label><input type="radio" name="one_car" value="否" /> 否</label>
     </label>
 
-    <label>誰付: <input type="text" name="partners" /></label>
+    <label>誰付: 
+      <select name="fb_name" required>
+        <option value="">--請選擇--</option>
+        <option value="yating">yating</option>
+        <option value="ming">ming</option>
+      </select></label>
     <label>匯款金額: <input type="number" name="bundle_price" required /></label>
     <label>憑證:<br><input type="file" name="voucher" accept="image/*" /></label>
     <label>備註: <input type="text" name="remarks" /></label>
@@ -285,7 +290,7 @@
 
       async function fetchHistory() {
         try {
-          const res = await fetch('https://script.google.com/macros/s/AKfycbziuTpxNyOEAOWgqwyhAaYaw9Peo1KYKw05pBjNb3xrUUdqNQyYJphKovWCBZOeW2TZ/exec');
+          const res = await fetch('https://script.google.com/macros/s/AKfycbzMW78f6_R4jYZvGsTkN0K9EihJ7m4fxfgaSMRLLRPzVIP-Xpo6m-5kDfa1NgvmX_oE8g/exec');
           const result = await res.json();
           if (Array.isArray(result.data)) {
             result.data.forEach(row => {
