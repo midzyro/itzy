@@ -5,7 +5,6 @@
   <title>拼車系統</title>
   <base href="/itzy/">
   <style>
-    /* 原本CSS不變 */
     body {
       font-family: "Microsoft JhengHei", sans-serif;
       padding: 40px;
@@ -42,13 +41,14 @@
 
     input[type="text"],
     input[type="number"],
-    input[type="datetime-local"] {
+    input[type="datetime-local"],
+    select.custom-select {
       width: 100%;
-      padding: 8px 10px;
+      padding: 10px 12px;
       margin-top: 5px;
       border: 1px solid #ccc;
       border-radius: 4px;
-      font-size: 14px;
+      font-size: 16px;
     }
 
     button {
@@ -175,7 +175,7 @@
   <h2>填入資料</h2>
   <form id="auctionForm">
     <label>姓名:
-      <select name="fb_name" required>
+      <select name="fb_name" class="custom-select" required>
         <option value="">--請選擇--</option>
         <option value="yating">yating</option>
         <option value="ming">ming</option>
@@ -201,11 +201,13 @@
     </label>
 
     <label>誰付: 
-      <select name="partners" required>
+      <select name="fb_name" class="custom-select" required>
         <option value="">--請選擇--</option>
         <option value="yating">yating</option>
         <option value="ming">ming</option>
-      </select></label>
+      </select>
+    </label>
+
     <label>匯款金額: <input type="number" name="bundle_price" required /></label>
     <label>憑證:<br><input type="file" name="voucher" accept="image/*" /></label>
     <label>備註: <input type="text" name="remarks" /></label>
@@ -223,15 +225,14 @@
 
   <h2>特典圖片區</h2>
   <div id="photoGallery" class="visible">
-    <img src="imagers/ms1_A.jpg" alt="特典圖片 ms1_A" class="product-photo" />
-    <img src="imagers/ms1_B.jpg" alt="特典圖片 ms1_B" class="product-photo" />
-    <img src="imagers/wm.jpg" alt="特典圖片 wm" class="product-photo" />
-    <img src="imagers/預覽整理.jpg" alt="特典圖片 預售預覽" class="product-photo" />
+    <img src="ms1_A.jpg" alt="特典圖片" class="product-photo" />
+    <img src="ms1_B.jpg" alt="特典圖片" class="product-photo" />
+    <img src="wm.jpg" alt="特典圖片" class="product-photo" />
   </div>
 
   <h2>對帳表</h2>
   <label>要看誰: 
-    <select id="filterFbName">
+    <select id="filterFbName" class="custom-select">
       <option value="">全部</option>
       <option value="yating">yating</option>
       <option value="ming">ming</option>
@@ -372,28 +373,6 @@
           recordsTableBody.appendChild(row);
         });
       }
-
-      const filterSelect = document.getElementById('filterFbName');
-      filterSelect.addEventListener('change', () => {
-        const filter = filterSelect.value;
-        recordsTableBody.innerHTML = '';
-        records
-          .filter(rec => filter === '' || rec.fb_name === filter)
-          .forEach(rec => {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-              <td>${rec.fb_name}</td>
-              <td>${rec.purchase_channel}</td>
-              <td>${rec.members}</td>
-              <td>${rec.one_car}</td>
-              <td>${rec.partners}</td>
-              <td>${rec.bundle_price}</td>
-              <td>${rec.remarks}</td>
-              <td>${rec.submit_time}</td>
-            `;
-            recordsTableBody.appendChild(row);
-          });
-      });
     });
   </script>
 </body>
