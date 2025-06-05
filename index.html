@@ -355,12 +355,12 @@
         renderRecordsTable();
 
         try {
-          const res = await fetch('fetch('https://nameless-grass-ef88.za91410.workers.dev/?target=https://script.google.com/macros/s/AKfycbzMW78f6_R4jYZvGsTkN0K9EihJ7m4fxfgaSMRLLRPzVIP-Xpo6m-5kDfa1NgvmX_oE8g/exec')', {
-            method: 'POST',
-            body: JSON.stringify(data),
-            headers: {
-              'Content-Type': 'application/json',
-            }
+          const res = await fetch('https://nameless-grass-ef88.za91410.workers.dev/?target=https://script.google.com/macros/s/AKfycbzMW78f6_R4jYZvGsTkN0K9EihJ7m4fxfgaSMRLLRPzVIP-Xpo6m-5kDfa1NgvmX_oE8g/exec', {
+              method: 'POST',
+              body: JSON.stringify(data),
+              headers: {
+                'Content-Type': 'application/json'
+              }
           });
           const result = await res.json();
           if (result.result === 'success') {
