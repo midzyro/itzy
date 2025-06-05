@@ -41,7 +41,7 @@
 
     input[type="text"],
     input[type="number"],
-    select {
+    input[type="datetime-local"] {
       width: 100%;
       padding: 8px 10px;
       margin-top: 5px;
@@ -147,7 +147,6 @@
       display: none !important;
     }
 
-    /* 放大圖片視窗樣式 */
     #lightboxOverlay {
       position: fixed;
       top: 0; left: 0;
@@ -172,48 +171,42 @@
 <body>
   <h1>拼車</h1>
   
-  <!-- 送出之後會連動到 google表單 -->
   <h2>填入資料</h2>
   <form id="auctionForm">
     <label>姓名:
-      <select name="fb_name" id="fb_name" required>
+      <select name="fb_name" required>
         <option value="">--請選擇--</option>
         <option value="yating">yating</option>
         <option value="ming">ming</option>
       </select>
-    </label><br>
+    </label>
 
     <label>通路:
-      <select name="purchase_channel" id="purchase_channel" required>
-        <option value="">--請選擇--</option>
-        <option value="MS1">ms1(線上)感冒</option>
-        <option value="ms1">ms1(線下)表符</option>
-        <option value="WM1">wm線上</option>
-        <option value="wm1">wm線下</option>
-        <option value="other">其他</option>
-      </select>
-      <!-- 輸入框預設隱藏 -->
-      <input type="text" name="purchase_channel_other" id="purchase_channel_other" placeholder="請輸入其他通路名稱" style="margin-top:5px; display:none;"/>
-    </label><br>
+      <input type="text" name="purchase_channel" placeholder="請輸入通路" required />
+    </label>
 
-    <label>拚誰:
-      <br>
+    <label>拚誰:<br>
       <label><input type="checkbox" name="members" value="志" /> 志</label>
       <label><input type="checkbox" name="members" value="粒" /> 粒</label>
       <label><input type="checkbox" name="members" value="溜" /> 溜</label>
       <label><input type="checkbox" name="members" value="領" /> 領</label>
       <label><input type="checkbox" name="members" value="娜" /> 娜</label>
-    </label><br>
+      <label><input type="checkbox" name="members" value="其他" /> 其他</label>
+    </label>
 
     <label>一車?：
       <label><input type="radio" name="one_car" value="是" required /> 是</label>
       <label><input type="radio" name="one_car" value="否" /> 否</label>
-    </label><br>
+    </label>
 
-    <label>誰付: <input type="text" name="partners" /></label><br>
-    <label>匯款金額: <input type="number" name="bundle_price" required /></label><br>
-    <label>憑證:<br><input type="file" name="voucher" accept="image/*" /></label><br>
-    <label>備註: <input type="text" name="remarks" /></label><br>
+    <label>誰付: <input type="text" name="partners" /></label>
+    <label>匯款金額: <input type="number" name="bundle_price" required /></label>
+    <label>憑證:<br><input type="file" name="voucher" accept="image/*" /></label>
+    <label>備註: <input type="text" name="remarks" /></label>
+
+    <label>填寫時間:
+      <input type="datetime-local" name="submit_time" required />
+    </label>
 
     <button type="submit">送出</button>
   </form>
@@ -229,9 +222,7 @@
     <img src="wm.jpg" alt="特典圖片" class="product-photo" />
   </div>
 
-  <!-- 對帳表 -->
   <h2>對帳表</h2>
-
   <label>要看誰: 
     <select id="filterFbName">
       <option value="">全部</option>
@@ -251,35 +242,33 @@
           <th>誰付</th>
           <th>匯款金額</th>
           <th>備註</th>
+          <th>填寫時間</th>
         </tr>
       </thead>
-      <tbody>
-        <!-- JS 自動生成 -->
-      </tbody>
+      <tbody></tbody>
     </table>
   </div>
 
-  <!-- 放大圖片視窗 -->
   <div id="lightboxOverlay">
     <img id="lightboxImage" src="" alt="放大圖片">
   </div>
 
   <script>
     document.addEventListener('DOMContentLoaded', () => {
+      const form = document.getElementById('auctionForm');
+      const statusMsg = document.getElementById('statusMsg');
+      const recordsTableBody = document.querySelector('#recordsTable tbody');
+      const lightbox = document.getElementById('lightboxOverlay');
+      const lightboxImage = document.getElementById('lightboxImage');
       const toggleBtn = document.getElementById('toggleSectionBtn');
       const photoGallery = document.getElementById('photoGallery');
       const recordsWrapper = document.getElementById('recordsWrapper');
-      const form = document.getElementById('auctionForm');
-      const statusMsg = document.getElementById('statusMsg');
-      const purchaseChannelSelect = document.getElementById('purchase_channel');
-      const purchaseChannelOtherInput = document.getElementById('purchase_channel_other');
-      const filterFbName = document.getElementById('filterFbName');
-      const recordsTableBody = document.querySelector('#recordsTable tbody');
 
-      const lightbox = document.getElementById('lightboxOverlay');
-      const lightboxImage = document.getElementById('lightboxImage');
+      toggleBtn.addEventListener('click', () => {
+        photoGallery.classList.toggle('hidden');
+        recordsWrapper.classList.toggle('hidden');
+      });
 
-      // 圖片點擊放大
       document.querySelectorAll('.product-photo').forEach(img => {
         img.addEventListener('click', () => {
           lightboxImage.src = img.src;
@@ -287,143 +276,61 @@
         });
       });
 
-      lightbox.addEventListener('click', (e) => {
-        if (e.target === lightbox || e.target === lightboxImage) {
-          lightbox.style.display = 'none';
-        }
+      lightbox.addEventListener('click', () => {
+        lightbox.style.display = 'none';
       });
 
-      const today = new Date();
-      const channelDeadlines = {
-        ms1: '2025-06-04',
-        MS1: '2025-06-04',
-        wm1: '2025-06-10',
-        WM1: '2025-06-10',
-        other: '2025-07-01'
-      };
-
-      [...purchaseChannelSelect.options].forEach(option => {
-        const deadlineStr = channelDeadlines[option.value];
-        if (deadlineStr) {
-          const deadline = new Date(deadlineStr);
-          if (today > deadline) {
-            option.disabled = true;
-            if (!option.textContent.includes('（已截止）')) {
-              option.textContent += '（已截止）';
-            }
-          }
-        }
-      });
-
-      // 通路選擇切換其他輸入框
-      purchaseChannelSelect.addEventListener('change', () => {
-        if (purchaseChannelSelect.value === 'other') {
-          purchaseChannelOtherInput.style.display = 'block';
-          purchaseChannelOtherInput.required = true;
-        } else {
-          purchaseChannelOtherInput.style.display = 'none';
-          purchaseChannelOtherInput.required = false;
-          purchaseChannelOtherInput.value = '';
-        }
-      });
-
-      // 紀錄資料用陣列（模擬資料來源，或可改成fetch從Google Sheet抓取）
       const records = [];
 
-      // 表單送出
       form.addEventListener('submit', async (e) => {
         e.preventDefault();
         const formData = new FormData(form);
 
-        // 處理多選 checkbox members
         const members = [];
         form.querySelectorAll('input[name="members"]:checked').forEach(cb => {
           members.push(cb.value);
         });
 
-        // 取得通路名稱（如果選other，取輸入框值）
-        let purchaseChannelVal = purchaseChannelSelect.value;
-        if (purchaseChannelVal === 'other') {
-          purchaseChannelVal = purchaseChannelOtherInput.value.trim();
-        }
-
-        // 封裝資料
         const data = {
           fb_name: formData.get('fb_name'),
-          purchase_channel: purchaseChannelVal,
+          purchase_channel: formData.get('purchase_channel').trim(),
           members: members.join(', '),
           one_car: formData.get('one_car'),
           partners: formData.get('partners'),
           bundle_price: formData.get('bundle_price'),
           remarks: formData.get('remarks'),
+          submit_time: formData.get('submit_time')
         };
 
-        // 模擬存資料（實際你還是會送Google表單）
         records.push(data);
-
-        // 更新對帳表顯示
         renderRecordsTable();
 
         try {
-          const res = await fetch(
-            'https://script.google.com/macros/s/AKfycbziuTpxNyOEAOWgqwyhAaYaw9Peo1KYKw05pBjNb3xrUUdqNQyYJphKovWCBZOeW2TZ/exec',
-            {
-              method: 'POST',
-              body: JSON.stringify(data),
-              headers: {
-                'Content-Type': 'application/json',
-              },
+          const res = await fetch('https://script.google.com/macros/s/你的-GAS-網址/exec', {
+            method: 'POST',
+            body: JSON.stringify(data),
+            headers: {
+              'Content-Type': 'application/json',
             }
-          );
+          });
           const result = await res.json();
           if (result.result === 'success') {
             statusMsg.textContent = '✅ 成功送出！';
             form.reset();
-            purchaseChannelOtherInput.style.display = 'none'; // 重設輸入框隱藏
-            purchaseChannelOtherInput.required = false;
           } else {
             statusMsg.textContent = '❌ 發生錯誤，請稍後再試';
           }
         } catch (err) {
           console.error(err);
-          statusMsg.textContent = '❌ 無法送出，請檢查網路連線';
+          statusMsg.textContent = '❌ 發送失敗';
         }
       });
 
-      // 切換特典 / 對帳表
-      toggleBtn.addEventListener('click', () => {
-        if (photoGallery.classList.contains('visible')) {
-          photoGallery.classList.replace('visible', 'hidden');
-          recordsWrapper.classList.replace('hidden', 'visible');
-          toggleBtn.textContent = '切換特典圖片區';
-        } else {
-          recordsWrapper.classList.replace('visible', 'hidden');
-          photoGallery.classList.replace('hidden', 'visible');
-          toggleBtn.textContent = '切換對帳表';
-        }
-      });
-
-      // 篩選拼車群資料
-      filterFbName.addEventListener('change', () => {
-        renderRecordsTable();
-      });
-
-      // 渲染對帳表
       function renderRecordsTable() {
-        const filterVal = filterFbName.value;
         recordsTableBody.innerHTML = '';
-        const filtered = filterVal
-          ? records.filter(r => r.fb_name === filterVal)
-          : records;
-
-        if (filtered.length === 0) {
-          recordsTableBody.innerHTML = '<tr><td colspan="7">無資料</td></tr>';
-          return;
-        }
-
-        for (const rec of filtered) {
-          const tr = document.createElement('tr');
-          tr.innerHTML = `
+        records.forEach(rec => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
             <td>${rec.fb_name}</td>
             <td>${rec.purchase_channel}</td>
             <td>${rec.members}</td>
@@ -431,9 +338,10 @@
             <td>${rec.partners}</td>
             <td>${rec.bundle_price}</td>
             <td>${rec.remarks}</td>
+            <td>${rec.submit_time}</td>
           `;
-          recordsTableBody.appendChild(tr);
-        }
+          recordsTableBody.appendChild(row);
+        });
       }
     });
   </script>
