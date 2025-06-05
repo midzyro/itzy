@@ -5,6 +5,7 @@
   <title>拼車系統</title>
   <base href="/itzy/">
   <style>
+    /* 原本CSS不變 */
     body {
       font-family: "Microsoft JhengHei", sans-serif;
       padding: 40px;
@@ -170,7 +171,7 @@
 </head>
 <body>
   <h1>拼車</h1>
-  
+
   <h2>填入資料</h2>
   <form id="auctionForm">
     <label>姓名:
@@ -254,7 +255,7 @@
   </div>
 
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', async () => {
       const form = document.getElementById('auctionForm');
       const statusMsg = document.getElementById('statusMsg');
       const recordsTableBody = document.querySelector('#recordsTable tbody');
@@ -282,6 +283,23 @@
 
       const records = [];
 
+      async function fetchHistory() {
+        try {
+          const res = await fetch('https://script.google.com/macros/s/AKfycbziuTpxNyOEAOWgqwyhAaYaw9Peo1KYKw05pBjNb3xrUUdqNQyYJphKovWCBZOeW2TZ/exec');
+          const result = await res.json();
+          if (Array.isArray(result.data)) {
+            result.data.forEach(row => {
+              records.push(row);
+            });
+            renderRecordsTable();
+          }
+        } catch (err) {
+          console.error('讀取歷史資料失敗', err);
+        }
+      }
+
+      await fetchHistory();
+
       form.addEventListener('submit', async (e) => {
         e.preventDefault();
         const formData = new FormData(form);
@@ -291,6 +309,10 @@
           members.push(cb.value);
         });
 
+        const fileInput = form.querySelector('input[name="voucher"]');
+        const file = fileInput.files[0];
+        let voucherName = file ? file.name : '';
+
         const data = {
           fb_name: formData.get('fb_name'),
           purchase_channel: formData.get('purchase_channel').trim(),
@@ -298,6 +320,7 @@
           one_car: formData.get('one_car'),
           partners: formData.get('partners'),
           bundle_price: formData.get('bundle_price'),
+          voucher: voucherName,
           remarks: formData.get('remarks'),
           submit_time: formData.get('submit_time')
         };
@@ -306,7 +329,7 @@
         renderRecordsTable();
 
         try {
-          const res = await fetch('https://script.google.com/macros/s/你的-GAS-網址/exec', {
+          const res = await fetch('https://script.google.com/macros/s/AKfycbziuTpxNyOEAOWgqwyhAaYaw9Peo1KYKw05pBjNb3xrUUdqNQyYJphKovWCBZOeW2TZ/exec', {
             method: 'POST',
             body: JSON.stringify(data),
             headers: {
