@@ -201,7 +201,7 @@
     </label>
 
     <label>誰付: 
-      <select name="fb_name" required>
+      <select name="partners" required>
         <option value="">--請選擇--</option>
         <option value="yating">yating</option>
         <option value="ming">ming</option>
@@ -223,9 +223,10 @@
 
   <h2>特典圖片區</h2>
   <div id="photoGallery" class="visible">
-    <img src="ms1_A.jpg" alt="特典圖片" class="product-photo" />
-    <img src="ms1_B.jpg" alt="特典圖片" class="product-photo" />
-    <img src="wm.jpg" alt="特典圖片" class="product-photo" />
+    <img src="imagers/ms1_A.jpg" alt="特典圖片 ms1_A" class="product-photo" />
+    <img src="imagers/ms1_B.jpg" alt="特典圖片 ms1_B" class="product-photo" />
+    <img src="imagers/wm.jpg" alt="特典圖片 wm" class="product-photo" />
+    <img src="imagers/預覽整理.jpg" alt="特典圖片 預售預覽" class="product-photo" />
   </div>
 
   <h2>對帳表</h2>
@@ -371,6 +372,28 @@
           recordsTableBody.appendChild(row);
         });
       }
+
+      const filterSelect = document.getElementById('filterFbName');
+      filterSelect.addEventListener('change', () => {
+        const filter = filterSelect.value;
+        recordsTableBody.innerHTML = '';
+        records
+          .filter(rec => filter === '' || rec.fb_name === filter)
+          .forEach(rec => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+              <td>${rec.fb_name}</td>
+              <td>${rec.purchase_channel}</td>
+              <td>${rec.members}</td>
+              <td>${rec.one_car}</td>
+              <td>${rec.partners}</td>
+              <td>${rec.bundle_price}</td>
+              <td>${rec.remarks}</td>
+              <td>${rec.submit_time}</td>
+            `;
+            recordsTableBody.appendChild(row);
+          });
+      });
     });
   </script>
 </body>
