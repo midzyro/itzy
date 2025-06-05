@@ -173,6 +173,10 @@
       box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
     }
   </style>
+<head>
+  <meta charset="UTF-8" />
+  <title>拼車系統</title>
+  <base href="/itzy/">
 </head>
 <body>
   <h1>拼車</h1>
@@ -210,7 +214,7 @@
     </label>
 
     <label>誰付: 
-      <select name="fb_name" class="custom-select" required>
+      <select name="payer" class="custom-select" required>
         <option value="">--請選擇--</option>
         <option value="yating">yating</option>
         <option value="ming">ming</option>
@@ -279,7 +283,7 @@
   <div id="lightboxOverlay">
     <img id="lightboxImage" src="" alt="放大圖片">
   </div>
-  
+
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
       const form = document.getElementById('auctionForm');
@@ -314,9 +318,7 @@
           const res = await fetch('');
           const result = await res.json();
           if (Array.isArray(result.data)) {
-            result.data.forEach(row => {
-              records.push(row);
-            });
+            result.data.forEach(row => records.push(row));
             renderRecordsTable();
           }
         } catch (err) {
@@ -329,15 +331,11 @@
       form.addEventListener('submit', async (e) => {
         e.preventDefault();
         const formData = new FormData(form);
-
         const members = [];
-        form.querySelectorAll('input[name="members"]:checked').forEach(cb => {
-          members.push(cb.value);
-        });
-
+        form.querySelectorAll('input[name="members"]:checked').forEach(cb => members.push(cb.value));
         const fileInput = form.querySelector('input[name="voucher"]');
         const file = fileInput.files[0];
-        let voucherName = file ? file.name : '';
+        const voucherName = file ? file.name : '';
 
         const data = {
           fb_name: formData.get('fb_name'),
@@ -345,6 +343,7 @@
           members: members.join(', '),
           one_car: formData.get('one_car'),
           partners: formData.get('partners'),
+          payer: formData.get('payer'),
           bundle_price: formData.get('bundle_price'),
           voucher: voucherName,
           remarks: formData.get('remarks'),
@@ -356,11 +355,11 @@
 
         try {
           const res = await fetch('https://nameless-grass-ef88.za91410.workers.dev/?target=https://script.google.com/macros/s/AKfycbzMW78f6_R4jYZvGsTkN0K9EihJ7m4fxfgaSMRLLRPzVIP-Xpo6m-5kDfa1NgvmX_oE8g/exec', {
-              method: 'POST',
-              body: JSON.stringify(data),
-              headers: {
-                'Content-Type': 'application/json'
-              }
+            method: 'POST',
+            body: JSON.stringify(data),
+            headers: {
+              'Content-Type': 'application/json'
+            }
           });
           const result = await res.json();
           if (result.result === 'success') {
@@ -385,7 +384,7 @@
             <td>${rec.members}</td>
             <td>${rec.partners}</td>
             <td>${rec.one_car}</td>
-            <td>${rec.payer}</td> <!-- 顯示誰付 -->
+            <td>${rec.payer}</td>
             <td>${rec.bundle_price}</td>
             <td>${rec.remarks}</td>
             <td>${rec.submit_time}</td>
@@ -393,7 +392,6 @@
           recordsTableBody.appendChild(row);
         });
       }
-
     });
   </script>
 </body>
