@@ -383,8 +383,9 @@
             <td>${rec.fb_name}</td>
             <td>${rec.purchase_channel}</td>
             <td>${rec.members}</td>
-            <td>${rec.one_car}</td>
             <td>${rec.partners}</td>
+            <td>${rec.one_car}</td>
+            <td>${rec.payer}</td> <!-- 顯示誰付 -->
             <td>${rec.bundle_price}</td>
             <td>${rec.remarks}</td>
             <td>${rec.submit_time}</td>
@@ -392,6 +393,7 @@
           recordsTableBody.appendChild(row);
         });
       }
+
     });
   </script>
 </body>
