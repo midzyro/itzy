@@ -20,7 +20,7 @@
       border-bottom: 2px solid #007BFF;
       padding-bottom: 5px;
       display: flex;
-      align-items: center;F
+      align-items: center;
       justify-content: space-between;
     }
 
@@ -173,10 +173,6 @@
       box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
     }
   </style>
-<head>
-  <meta charset="UTF-8" />
-  <title>拼車系統</title>
-  <base href="/itzy/">
 </head>
 <body>
   <h1>拼車</h1>
@@ -294,6 +290,9 @@
       const toggleBtn = document.getElementById('toggleSectionBtn');
       const photoGallery = document.getElementById('photoGallery');
       const recordsWrapper = document.getElementById('recordsWrapper');
+      const filterFbName = document.getElementById('filterFbName');
+
+      let records = [];
 
       toggleBtn.addEventListener('click', () => {
         photoGallery.classList.toggle('hidden');
@@ -311,14 +310,12 @@
         lightbox.style.display = 'none';
       });
 
-      const records = [];
-
       async function fetchHistory() {
         try {
-          const res = await fetch('https://script.google.com/macros/s/AKfycbzMW78f6_R4jYZvGsTkN0K9EihJ7m4fxfgaSMRLLRPzVIP-Xpo6m-5kDfa1NgvmX_oE8g/exec');
+          const res = await fetch('https://gas-proxy.za91410.workers.dev/');
           const result = await res.json();
           if (Array.isArray(result.data)) {
-            result.data.forEach(row => records.push(row));
+            records = result.data;
             renderRecordsTable();
           }
         } catch (err) {
@@ -330,7 +327,7 @@
 
       form.addEventListener('submit', async (e) => {
         e.preventDefault();
-      
+
         const formData = new FormData(form);
         const data = {
           fb_name: formData.get('fb_name'),
@@ -343,33 +340,45 @@
           remarks: formData.get('remarks'),
           submit_time: formData.get('submit_time')
         };
-      
+
         try {
-          const res = await fetch('https://script.google.com/macros/s/AKfycbzMW78f6_R4jYZvGsTkN0K9EihJ7m4fxfgaSMRLLRPzVIP-Xpo6m-5kDfa1NgvmX_oE8g/exec', {
+          const res = await fetch('https://gas-proxy.za91410.workers.dev/', {
             method: 'POST',
             body: JSON.stringify(data),
             headers: {
               'Content-Type': 'application/json'
             }
           });
-      
+
           const result = await res.json();
           statusMsg.textContent = result.result === '成功' ? '送出成功！' : '送出失敗：' + result.message;
+
+          if(result.result === '成功') {
+            // 成功後重新載入資料
+            await fetchHistory();
+            form.reset();
+          }
         } catch (error) {
           console.error(error);
           statusMsg.textContent = '錯誤：' + error;
         }
       });
 
+      filterFbName.addEventListener('change', () => {
+        renderRecordsTable();
+      });
 
       function renderRecordsTable() {
+        const filterValue = filterFbName.value;
         recordsTableBody.innerHTML = '';
-        records.forEach(rec => {
+        const filteredRecords = filterValue ? records.filter(r => r.fb_name === filterValue) : records;
+
+        filteredRecords.forEach(rec => {
           const row = document.createElement('tr');
           row.innerHTML = `
             <td>${rec.fb_name}</td>
             <td>${rec.purchase_channel}</td>
-            <td>${rec.members}</td>
+            <td>${Array.isArray(rec.members) ? rec.members.join(", ") : rec.members}</td>
             <td>${rec.partners}</td>
             <td>${rec.one_car}</td>
             <td>${rec.payer}</td>
