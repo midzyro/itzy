@@ -281,7 +281,24 @@
   </div>
 
   <script>
-  document.getElementById('auctionForm').addEventListener('submit', async (e) => {
+    // 新增切換功能
+    document.getElementById('toggleSectionBtn').addEventListener('click', () => {
+      const photoGallery = document.getElementById('photoGallery');
+      const recordsWrapper = document.getElementById('recordsWrapper');
+  
+      if (photoGallery.classList.contains('visible')) {
+        photoGallery.classList.remove('visible');
+        photoGallery.classList.add('hidden');
+        recordsWrapper.classList.remove('hidden');
+        recordsWrapper.classList.add('visible');
+      } else {
+        photoGallery.classList.remove('hidden');
+        photoGallery.classList.add('visible');
+        recordsWrapper.classList.remove('visible');
+        recordsWrapper.classList.add('hidden');
+      }
+    });
+    document.getElementById('auctionForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const form = e.target;
     const formData = new FormData(form);
