@@ -317,11 +317,14 @@
           if (Array.isArray(result.data)) {
             records = result.data;
             renderRecordsTable();
+          } else {
+            console.error('資料格式錯誤', result);
           }
         } catch (err) {
           console.error('讀取歷史資料失敗', err);
         }
       }
+
 
       await fetchHistory();
 
