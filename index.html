@@ -281,118 +281,50 @@
   </div>
 
   <script>
-    document.addEventListener('DOMContentLoaded', async () => {
-      const form = document.getElementById('auctionForm');
-      const statusMsg = document.getElementById('statusMsg');
-      const recordsTableBody = document.querySelector('#recordsTable tbody');
-      const lightbox = document.getElementById('lightboxOverlay');
-      const lightboxImage = document.getElementById('lightboxImage');
-      const toggleBtn = document.getElementById('toggleSectionBtn');
-      const photoGallery = document.getElementById('photoGallery');
-      const recordsWrapper = document.getElementById('recordsWrapper');
-      const filterFbName = document.getElementById('filterFbName');
+  document.getElementById('auctionForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const form = e.target;
+    const formData = new FormData(form);
+    
+    // 組裝資料
+    const data = {
+      fb_name: formData.get('fb_name'),
+      purchase_channel: formData.get('purchase_channel'),
+      members: formData.getAll('members'), // 多選
+      one_car: formData.get('one_car'),
+      partners: formData.get('partners'),
+      payer: formData.get('payer'),
+      bundle_price: formData.get('bundle_price'),
+      remarks: formData.get('remarks'),
+      submit_time: formData.get('submit_time') || new Date().toISOString()
+    };
 
-      let records = [];
+    // 顯示傳送狀態
+    const statusMsg = document.getElementById('statusMsg');
+    statusMsg.textContent = '資料傳送中...';
 
-      toggleBtn.addEventListener('click', () => {
-        photoGallery.classList.toggle('hidden');
-        recordsWrapper.classList.toggle('hidden');
+    try {
+      const res = await fetch('https://gas-proxy.za91410.workers.dev/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
       });
 
-      document.querySelectorAll('.product-photo').forEach(img => {
-        img.addEventListener('click', () => {
-          lightboxImage.src = img.src;
-          lightbox.style.display = 'flex';
-        });
-      });
-
-      lightbox.addEventListener('click', () => {
-        lightbox.style.display = 'none';
-      });
-
-      async function fetchHistory() {
-        try {
-          const res = await fetch('https://script.google.com/macros/s/AKfycbzMW78f6_R4jYZvGsTkN0K9EihJ7m4fxfgaSMRLLRPzVIP-Xpo6m-5kDfa1NgvmX_oE8g/exec');
-          const result = await res.json();
-          if (Array.isArray(result.data)) {
-            records = result.data;
-            renderRecordsTable();
-          } else {
-            console.error('資料格式錯誤', result);
-          }
-        } catch (err) {
-          console.error('讀取歷史資料失敗', err);
-        }
+      const result = await res.json();
+      if (result.result === '成功' || res.ok) {
+        statusMsg.textContent = '✅ 送出成功';
+        form.reset();
+      } else {
+        statusMsg.textContent = '❌ 送出失敗：' + (result.message || '未知錯誤');
       }
+    } catch (err) {
+      console.error('傳送錯誤:', err);
+      statusMsg.textContent = '❌ 錯誤發生：' + err.message;
+    }
+  });
+</script>
 
-
-      await fetchHistory();
-
-      form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-
-        const formData = new FormData(form);
-        const data = {
-          fb_name: formData.get('fb_name'),
-          purchase_channel: formData.get('purchase_channel'),
-          members: formData.getAll('members'),
-          one_car: formData.get('one_car'),
-          partners: formData.get('partners'),
-          payer: formData.get('payer'),
-          bundle_price: formData.get('bundle_price'),
-          remarks: formData.get('remarks'),
-          submit_time: formData.get('submit_time')
-        };
-
-        try {
-          const res = await fetch('https://gas-proxy.za91410.workers.dev/', {
-            method: 'POST',
-            body: JSON.stringify(data),
-            headers: {
-              'Content-Type': 'application/json'
-            }
-          });
-
-          const result = await res.json();
-          statusMsg.textContent = result.result === '成功' ? '送出成功！' : '送出失敗：' + result.message;
-
-          if(result.result === '成功') {
-            // 成功後重新載入資料
-            await fetchHistory();
-            form.reset();
-          }
-        } catch (error) {
-          console.error(error);
-          statusMsg.textContent = '錯誤：' + error;
-        }
-      });
-
-      filterFbName.addEventListener('change', () => {
-        renderRecordsTable();
-      });
-
-      function renderRecordsTable() {
-        const filterValue = filterFbName.value;
-        recordsTableBody.innerHTML = '';
-        const filteredRecords = filterValue ? records.filter(r => r.fb_name === filterValue) : records;
-
-        filteredRecords.forEach(rec => {
-          const row = document.createElement('tr');
-          row.innerHTML = `
-            <td>${rec.fb_name}</td>
-            <td>${rec.purchase_channel}</td>
-            <td>${Array.isArray(rec.members) ? rec.members.join(", ") : rec.members}</td>
-            <td>${rec.partners}</td>
-            <td>${rec.one_car}</td>
-            <td>${rec.payer}</td>
-            <td>${rec.bundle_price}</td>
-            <td>${rec.remarks}</td>
-            <td>${rec.submit_time}</td>
-          `;
-          recordsTableBody.appendChild(row);
-        });
-      }
-    });
-  </script>
 </body>
 </html>
