@@ -302,6 +302,50 @@
     e.preventDefault();
     const form = e.target;
     const formData = new FormData(form);
+
+    async function fetchRecords() {
+    try {
+      const response = await fetch('https://gas-proxy.za91410.workers.dev/?mode=read');
+      const result = await response.json();
+
+      const tableBody = document.querySelector('#recordsTable tbody');
+      tableBody.innerHTML = ''; // 清空表格
+
+      result.data.forEach(row => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${row.fb_name}</td>
+          <td>${row.purchase_channel}</td>
+          <td>${row.members}</td>
+          <td>${row.partners}</td>
+          <td>${row.one_car}</td>
+          <td>${row.payer}</td>
+          <td>${row.bundle_price}</td>
+          <td>${row.remarks}</td>
+          <td>${row.submit_time}</td>
+        `;
+        tableBody.appendChild(tr);
+      });
+    } catch (err) {
+      console.error('讀取資料失敗', err);
+    }
+  }
+
+  // 點選切換到對帳表時自動抓資料
+  document.getElementById('toggleSectionBtn').addEventListener('click', () => {
+    const photoGallery = document.getElementById('photoGallery');
+    const recordsWrapper = document.getElementById('recordsWrapper');
+
+    const isShowingPhoto = photoGallery.classList.contains('visible');
+    photoGallery.classList.toggle('visible', !isShowingPhoto);
+    photoGallery.classList.toggle('hidden', isShowingPhoto);
+    recordsWrapper.classList.toggle('visible', isShowingPhoto);
+    recordsWrapper.classList.toggle('hidden', !isShowingPhoto);
+
+    if (isShowingPhoto) {
+      fetchRecords(); // 只在切換到對帳表時抓資料
+    }
+  });
     
     // 組裝資料
     const data = {
