@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!DOCTYPE html> 
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8" />
@@ -281,16 +281,20 @@
   </div>
 
   <script>
-    // 新增切換功能
+    // 改成你的 GAS 部署網址
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbzMW78f6_R4jYZvGsTkN0K9EihJ7m4fxfgaSMRLLRPzVIP-Xpo6m-5kDfa1NgvmX_oE8g/exec";
+
+    // 切換特典 / 對帳表
     document.getElementById('toggleSectionBtn').addEventListener('click', () => {
       const photoGallery = document.getElementById('photoGallery');
       const recordsWrapper = document.getElementById('recordsWrapper');
-  
+
       if (photoGallery.classList.contains('visible')) {
         photoGallery.classList.remove('visible');
         photoGallery.classList.add('hidden');
         recordsWrapper.classList.remove('hidden');
         recordsWrapper.classList.add('visible');
+        fetchRecords();
       } else {
         photoGallery.classList.remove('hidden');
         photoGallery.classList.add('visible');
@@ -298,95 +302,114 @@
         recordsWrapper.classList.add('hidden');
       }
     });
-    document.getElementById('auctionForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const form = e.target;
-    const formData = new FormData(form);
 
+    // 讀取資料函式
     async function fetchRecords() {
-    try {
-      const response = await fetch('https://gas-proxy.za91410.workers.dev/?mode=read');
-      const result = await response.json();
+      try {
+        const response = await fetch(GAS_URL + '?mode=read');
+        const result = await response.json();
 
-      const tableBody = document.querySelector('#recordsTable tbody');
-      tableBody.innerHTML = ''; // 清空表格
+        const tableBody = document.querySelector('#recordsTable tbody');
+        tableBody.innerHTML = ''; // 清空表格
 
-      result.data.forEach(row => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${row.fb_name}</td>
-          <td>${row.purchase_channel}</td>
-          <td>${row.members}</td>
-          <td>${row.partners}</td>
-          <td>${row.one_car}</td>
-          <td>${row.payer}</td>
-          <td>${row.bundle_price}</td>
-          <td>${row.remarks}</td>
-          <td>${row.submit_time}</td>
-        `;
-        tableBody.appendChild(tr);
-      });
-    } catch (err) {
-      console.error('讀取資料失敗', err);
-    }
-  }
+        // 篩選依據
+        const filterName = document.getElementById('filterFbName').value;
 
-  // 點選切換到對帳表時自動抓資料
-  document.getElementById('toggleSectionBtn').addEventListener('click', () => {
-    const photoGallery = document.getElementById('photoGallery');
-    const recordsWrapper = document.getElementById('recordsWrapper');
-
-    const isShowingPhoto = photoGallery.classList.contains('visible');
-    photoGallery.classList.toggle('visible', !isShowingPhoto);
-    photoGallery.classList.toggle('hidden', isShowingPhoto);
-    recordsWrapper.classList.toggle('visible', isShowingPhoto);
-    recordsWrapper.classList.toggle('hidden', !isShowingPhoto);
-
-    if (isShowingPhoto) {
-      fetchRecords(); // 只在切換到對帳表時抓資料
-    }
-  });
-    
-    // 組裝資料
-    const data = {
-      fb_name: formData.get('fb_name'),
-      purchase_channel: formData.get('purchase_channel'),
-      members: formData.getAll('members'), // 多選
-      one_car: formData.get('one_car'),
-      partners: formData.get('partners'),
-      payer: formData.get('payer'),
-      bundle_price: formData.get('bundle_price'),
-      remarks: formData.get('remarks'),
-      submit_time: formData.get('submit_time') || new Date().toISOString()
-    };
-
-    // 顯示傳送狀態
-    const statusMsg = document.getElementById('statusMsg');
-    statusMsg.textContent = '📡 資料傳送中...';
-
-    try {
-      const res = await fetch('https://gas-proxy.za91410.workers.dev/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(data)
-      });
-
-      const result = await res.json();
-      if (result.result === '成功' || res.ok) {
-        statusMsg.textContent = '✅ 送出成功';
-        form.reset();
-      } else {
-        statusMsg.textContent = '❌ 送出失敗：' + (result.message || '未知錯誤');
+        result.data.forEach(row => {
+          if (filterName === '' || row.fb_name === filterName) {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td>${row.fb_name}</td>
+              <td>${row.purchase_channel}</td>
+              <td>${row.members}</td>
+              <td>${row.partners}</td>
+              <td>${row.one_car}</td>
+              <td>${row.payer}</td>
+              <td>${row.bundle_price}</td>
+              <td>${row.remarks}</td>
+              <td>${row.submit_time}</td>
+            `;
+            tableBody.appendChild(tr);
+          }
+        });
+      } catch (err) {
+        console.error('讀取資料失敗', err);
+        alert('讀取資料失敗，請稍後再試');
       }
-    } catch (err) {
-      console.error('傳送錯誤:', err);
-      statusMsg.textContent = '❌ 錯誤發生：' + err.message;
     }
-  });
-</script>
 
+    // 篩選下拉變動時自動重新載入
+    document.getElementById('filterFbName').addEventListener('change', fetchRecords);
 
+    // 表單送出
+    document.getElementById('auctionForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const form = e.target;
+      const formData = new FormData(form);
+
+      // 取出checkbox 多選 members
+      const members = [];
+      form.querySelectorAll('input[name="members"]:checked').forEach(el => {
+        members.push(el.value);
+      });
+
+      // 時間欄位格式化成 ISO 字串
+      let submit_time_val = formData.get('submit_time');
+      if (submit_time_val) {
+        submit_time_val = new Date(submit_time_val).toISOString();
+      }
+
+      const data = {
+        fb_name: formData.get('fb_name'),
+        purchase_channel: formData.get('purchase_channel'),
+        members: members,
+        partners: formData.get('partners'),
+        one_car: formData.get('one_car'),
+        payer: formData.get('payer'),
+        bundle_price: formData.get('bundle_price'),
+        remarks: formData.get('remarks'),
+        submit_time: submit_time_val
+      };
+
+      // 傳送資料
+      try {
+        const res = await fetch(GAS_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(data)
+        });
+        const result = await res.json();
+
+        if (result.result === '成功') {
+          document.getElementById('statusMsg').textContent = '資料送出成功！';
+          form.reset();
+        } else {
+          document.getElementById('statusMsg').textContent = '送出失敗: ' + (result.message || '');
+        }
+      } catch (err) {
+        document.getElementById('statusMsg').textContent = '送出時發生錯誤，請稍後再試';
+        console.error(err);
+      }
+    });
+
+    // 放大圖片燈箱效果
+    const lightboxOverlay = document.getElementById('lightboxOverlay');
+    const lightboxImage = document.getElementById('lightboxImage');
+
+    document.querySelectorAll('.product-photo').forEach(img => {
+      img.addEventListener('click', () => {
+        lightboxImage.src = img.src;
+        lightboxOverlay.style.display = 'flex';
+      });
+    });
+
+    lightboxOverlay.addEventListener('click', () => {
+      lightboxOverlay.style.display = 'none';
+      lightboxImage.src = '';
+    });
+  </script>
 </body>
 </html>
